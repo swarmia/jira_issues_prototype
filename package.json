@@ -1,0 +1,19 @@
+{
+  "name": "jira-issues",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,magenta \"npm:dev -w server\" \"npm:dev -w web\"",
+    "build": "./scripts/check-design-tokens.py && npm run build -w server && npm run build -w web",
+    "typecheck": "./scripts/check-design-tokens.py && npm run typecheck -w server && npm run typecheck -w web",
+    "sync-ds": "./scripts/sync-design-system.sh"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

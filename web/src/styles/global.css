@@ -1,0 +1,49 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--mainBackground, #fff);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--fontInter);
+  color: var(--textPrimary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+a {
+  color: var(--textLinkDefault);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--fontFactorA);
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue500);
+  outline-offset: 2px;
+}
+
+.tabularNums {
+  font-variant-numeric: tabular-nums;
+}

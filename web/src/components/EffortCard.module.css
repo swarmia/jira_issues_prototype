@@ -1,0 +1,79 @@
+.chart {
+  flex: 1;
+  min-height: 150px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  column-gap: 16px;
+  margin-top: 16px;
+}
+
+.axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--textChartAxis);
+  text-align: right;
+}
+
+.barCell {
+  display: flex;
+  align-items: flex-end;
+  border-top: 1px solid var(--strokeLight);
+  border-bottom: 1px solid var(--strokeLight);
+  padding: 0 12%;
+}
+
+.bar {
+  width: 100%;
+  background: var(--dataLightblue);
+  transition: height 0.2s ease;
+}
+
+.barLabel {
+  text-align: center;
+  font-size: 12px;
+  color: var(--textChartAxis);
+  padding-top: 6px;
+}
+
+.contributors {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.contributor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 6px;
+  border-bottom: 1px solid var(--strokeLight);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.contributorName {
+  flex: 1;
+  min-width: 0;
+}
+
+.shareTrack {
+  width: 120px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--blue50);
+  overflow: hidden;
+  flex: none;
+}
+
+.shareFill {
+  height: 100%;
+  background: var(--dataLightblue);
+}
+
+.empty {
+  margin-top: 24px;
+  color: var(--textSecondary);
+  font-size: 14px;
+}

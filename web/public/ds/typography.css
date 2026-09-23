@@ -1,0 +1,187 @@
+/* Derived by hand from the `fontVariants` export in
+ * apps/frontend/src/styles/theme.ts.
+ *
+ * Upstream these are consumed as `<Text variant="normalLabel">`. Each class
+ * here carries the variant's exact name so the mapping stays obvious, and
+ * reproduces every property the variant sets -- including the colors that
+ * `description` and `code` bake in.
+ *
+ * Re-check this file against theme.ts whenever ./scripts/sync-design-system.sh
+ * reports that theme.ts has moved.
+ */
+
+.h1 {
+  font-family: var(--fontFactorA);
+  font-size: var(--fontSize32);
+  line-height: var(--lineHeight40);
+  font-weight: var(--fontWeightBold);
+  letter-spacing: -0.01em;
+}
+
+.h2 {
+  font-family: var(--fontFactorA);
+  font-size: var(--fontSize24);
+  line-height: var(--lineHeight32);
+  font-weight: var(--fontWeightBold);
+  letter-spacing: normal;
+}
+
+.h3 {
+  font-family: var(--fontFactorA);
+  font-size: var(--fontSize20);
+  line-height: var(--lineHeight24);
+  font-weight: var(--fontWeightBold);
+  letter-spacing: normal;
+}
+
+.h4 {
+  font-family: var(--fontFactorA);
+  font-size: var(--fontSize18);
+  line-height: var(--lineHeight24);
+  font-weight: var(--fontWeightBold);
+  letter-spacing: normal;
+}
+
+.h5 {
+  font-family: var(--fontFactorA);
+  font-size: var(--fontSize16);
+  line-height: var(--lineHeight24);
+  font-weight: var(--fontWeightBold);
+  letter-spacing: 0.003em;
+}
+
+.h6 {
+  font-family: var(--fontFactorA);
+  font-size: var(--fontSize13);
+  line-height: var(--lineHeight16);
+  font-weight: var(--fontWeightMedium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.xxLargeHeading {
+  font-family: var(--fontFactorA);
+  font-size: var(--fontSize56);
+  line-height: 64px;
+  font-weight: var(--fontWeightBold);
+  letter-spacing: -0.02em;
+}
+
+.mainText {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize16);
+  line-height: var(--lineHeight24);
+  font-weight: var(--fontWeightRegular);
+}
+
+.description {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize16);
+  line-height: var(--lineHeight24);
+  font-weight: var(--fontWeightRegular);
+  color: var(--textSecondary);
+}
+
+.medium {
+  font-family: var(--fontFactorA);
+  font-size: var(--fontSize18);
+  line-height: var(--lineHeight24);
+  font-weight: var(--fontWeightRegular);
+}
+
+.small {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize14);
+  line-height: var(--lineHeight20);
+  font-weight: var(--fontWeightRegular);
+}
+
+.largeLabel {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize16);
+  line-height: var(--lineHeight20);
+  font-weight: var(--fontWeightMedium);
+  letter-spacing: -0.015em;
+}
+
+.normalLabel {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize14);
+  line-height: var(--lineHeight20);
+  font-weight: var(--fontWeightMedium);
+}
+
+.normalLabelBold {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize14);
+  line-height: var(--lineHeight20);
+  font-weight: var(--fontWeightBold);
+}
+
+.smallLabel {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize13);
+  line-height: var(--lineHeight16);
+  font-weight: var(--fontWeightMedium);
+}
+
+/* Typography for `<Label>` -- note the 18px line heights are not on the
+ * lineHeights scale upstream either; they define the Label's height. */
+.labelSm {
+  font-family: var(--fontInter);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: var(--fontWeightMedium);
+}
+
+.labelMd {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize13);
+  line-height: 18px;
+  font-weight: var(--fontWeightMedium);
+}
+
+.labelLg {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize14);
+  line-height: var(--lineHeight20);
+  font-weight: var(--fontWeightMedium);
+}
+
+.chartAxisLabel {
+  font-family: var(--fontInter);
+  font-size: 12px;
+  line-height: var(--lineHeight16);
+  font-weight: var(--fontWeightRegular);
+}
+
+.button {
+  font-family: var(--fontFactorA);
+  font-size: var(--fontSize16);
+  line-height: var(--lineHeight20);
+  font-weight: var(--fontWeightMedium);
+  letter-spacing: normal;
+}
+
+.toolbarUnderline {
+  font-family: var(--fontInter);
+  font-size: var(--fontSize16);
+  line-height: var(--lineHeight24);
+  font-weight: var(--fontWeightMedium);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.code {
+  font-family: var(--fontMonospace);
+  font-size: var(--fontSize13);
+  line-height: var(--lineHeight20);
+  font-weight: var(--fontWeightMedium);
+  color: var(--textCode);
+  background-color: var(--surfaceHover);
+  border: var(--borderWidthThin) solid var(--strokeDark);
+  border-radius: var(--radiusSmall);
+  padding-left: var(--space8);
+  padding-right: var(--space8);
+  display: inline-block;
+}

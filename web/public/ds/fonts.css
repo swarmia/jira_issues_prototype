@@ -1,0 +1,108 @@
+/* Derived by hand from apps/frontend/src/theme/fonts.less.
+ *
+ * The font files themselves are copied verbatim by
+ * ./scripts/sync-design-system.sh. Only the @font-face rules are rewritten,
+ * for two reasons:
+ *
+ *   1. Paths point at /ds/fonts/ rather than the monorepo's asset pipeline.
+ *   2. Upstream declares `font-style: bold` and `font-style: medium` on the
+ *      FactorA faces. Neither is a valid font-style -- the browser drops the
+ *      descriptor and falls back to `normal`, which is what was meant. Written
+ *      correctly here rather than copying the mistake forward.
+ *
+ * The monorepo also ships .ttf fallbacks for FactorA and italic faces for
+ * Inter 600/700. Neither is included: every browser this prototype targets
+ * takes the .woff2, and those italic weights are unused.
+ */
+
+/* --- FactorA: display, headings, buttons --------------------------------- */
+@font-face {
+  font-family: 'FactorA';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url('./fonts/FactorA-Regular.woff2') format('woff2'),
+    url('./fonts/FactorA-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'FactorA';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    url('./fonts/FactorA-Medium.woff2') format('woff2'),
+    url('./fonts/FactorA-Medium.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'FactorA';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    url('./fonts/FactorA-Bold.woff2') format('woff2'),
+    url('./fonts/FactorA-Bold.woff') format('woff');
+}
+
+/* --- Inter: all UI text -------------------------------------------------- */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url('./fonts/Inter-Regular.woff2') format('woff2'),
+    url('./fonts/Inter-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url('./fonts/Inter-Italic.woff2') format('woff2'),
+    url('./fonts/Inter-Italic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    url('./fonts/Inter-Medium.woff2') format('woff2'),
+    url('./fonts/Inter-Medium.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    url('./fonts/Inter-MediumItalic.woff2') format('woff2'),
+    url('./fonts/Inter-MediumItalic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src:
+    url('./fonts/Inter-SemiBold.woff2') format('woff2'),
+    url('./fonts/Inter-SemiBold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    url('./fonts/Inter-Bold.woff2') format('woff2'),
+    url('./fonts/Inter-Bold.woff') format('woff');
+}

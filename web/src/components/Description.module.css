@@ -1,0 +1,46 @@
+.heading {
+  font-family: var(--fontFactorA);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  margin: 0 0 20px;
+}
+
+.subheading {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.body {
+  position: relative;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  text-wrap: pretty;
+}
+
+.body p:last-child {
+  margin-bottom: 0;
+}
+
+.fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 24px;
+  background: linear-gradient(rgba(255, 255, 255, 0), var(--mainBackground));
+}
+
+.toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-top: 8px;
+  color: var(--textLinkDefault);
+  font-family: var(--fontInter);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}

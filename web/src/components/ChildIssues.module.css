@@ -1,0 +1,86 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 32px;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-family: var(--fontFactorA);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.counts {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--textSecondary);
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radiusRound);
+  flex: none;
+}
+
+.list {
+  border: 1px solid var(--strokeLight);
+  border-radius: var(--radiusLarge);
+  overflow: hidden;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 8px 88px 1fr 110px 96px 18px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--textPrimary);
+  text-decoration: none;
+}
+
+.row + .row {
+  border-top: 1px solid var(--strokeLight);
+}
+
+.row:hover {
+  background: var(--surfaceHover);
+  text-decoration: none;
+}
+
+.key {
+  color: var(--textSecondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.childTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status,
+.date {
+  color: var(--textSecondary);
+  font-size: 13px;
+}
+
+.date {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,159 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.title {
+  font-family: var(--fontFactorA);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  max-width: 620px;
+  color: var(--textSecondary);
+  font-size: 14px;
+  text-wrap: pretty;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.search {
+  flex: 1;
+  min-width: 240px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--strokeDark);
+  border-radius: var(--radiusMedium);
+  font-family: var(--fontInter);
+  font-size: 14px;
+  color: var(--textPrimary);
+}
+
+.select {
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--strokeDark);
+  border-radius: var(--radiusMedium);
+  font-family: var(--fontInter);
+  font-size: 14px;
+  background: var(--mainBackground);
+  color: var(--textPrimary);
+}
+
+.count {
+  color: var(--textSecondary);
+  font-size: 13px;
+}
+
+.table {
+  margin-top: 20px;
+  border: 1px solid var(--strokeLight);
+  border-radius: var(--radiusLarge);
+  overflow: hidden;
+  box-shadow: var(--shadowPaper1);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) 140px 170px 160px 110px 140px;
+  gap: 16px;
+  padding: 12px 16px;
+  align-items: center;
+}
+
+.head {
+  background: var(--surfaceHover);
+  font-family: var(--fontFactorA);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--textSecondary);
+}
+
+.body {
+  border-top: 1px solid var(--strokeLight);
+  font-size: 14px;
+  color: var(--textPrimary);
+}
+
+.body:hover {
+  background: var(--surfaceHover);
+  text-decoration: none;
+}
+
+.issueCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.issueKey {
+  font-weight: 500;
+  color: var(--textSecondary);
+  flex: none;
+}
+
+.issueTitle {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assignee {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.progressCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--blue50);
+  overflow: hidden;
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  background: var(--dataGreen);
+}
+
+.muted {
+  color: var(--textSecondary);
+}
+
+.right {
+  text-align: right;
+}
+
+@media (max-width: 1100px) {
+  .row {
+    grid-template-columns: minmax(0, 2fr) 130px 150px 110px;
+  }
+
+  .row > :nth-child(n + 5) {
+    display: none;
+  }
+}

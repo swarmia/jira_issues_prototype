@@ -1,0 +1,12 @@
+/* Swarmia design system -- single entry point.
+ *
+ * Linked once from web/index.html. Import order matters: fonts first so the
+ * @font-face rules are registered before anything references the families,
+ * then tokens, then the typography classes that consume both.
+ *
+ * See README.md in this folder for what is copied and what is hand-derived.
+ */
+@import './fonts.css';
+@import './colors.css';
+@import './theme.css';
+@import './typography.css';
