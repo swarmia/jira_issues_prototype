@@ -3,5 +3,3 @@ dist/
 .DS_Store
 *.log
 
-# SQLite database; recreated and seeded on first run
-server/data/
