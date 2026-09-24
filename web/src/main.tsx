@@ -6,8 +6,10 @@ import { AppLayout } from './AppLayout';
 import { client } from './gql/client';
 import { IssueDetailPage } from './routes/IssueDetailPage';
 import { IssueListPage } from './routes/IssueListPage';
+import { DesignSystemPage } from './routes/DesignSystemPage';
 import { NotFoundPage } from './routes/NotFoundPage';
 import './styles/global.css';
+import './styles/interaction.css';
 
 const router = createBrowserRouter([
   {
@@ -16,6 +18,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/issues" replace /> },
       { path: 'issues', element: <IssueListPage /> },
+      { path: 'design-system', element: <DesignSystemPage /> },
       { path: 'issues/:key', element: <IssueDetailPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

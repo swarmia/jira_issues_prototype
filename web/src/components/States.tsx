@@ -1,9 +1,9 @@
-import styles from './States.module.css';
+import { styles } from './States.styles';
 
 export function LoadingState({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div className={styles.state} role="status">
-      <span className={styles.spinner} />
+    <div style={styles.state} data-ui="States.state" role="status">
+      <span style={styles.spinner} data-ui="States.spinner" />
       {label}
     </div>
   );
@@ -11,11 +11,11 @@ export function LoadingState({ label = 'Loading…' }: { label?: string }) {
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className={styles.state}>
-      <span className={styles.errorTitle}>Something went wrong</span>
-      <span className={styles.errorMessage}>{message}</span>
+    <div style={styles.state} data-ui="States.state">
+      <span style={styles.errorTitle} data-ui="States.errorTitle">Something went wrong</span>
+      <span style={styles.errorMessage} data-ui="States.errorMessage">{message}</span>
       {onRetry && (
-        <button className={styles.retry} onClick={onRetry}>
+        <button style={styles.retry} data-ui="States.retry" onClick={onRetry}>
           Try again
         </button>
       )}
@@ -24,5 +24,5 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
 }
 
 export function EmptyState({ message }: { message: string }) {
-  return <div className={styles.state}>{message}</div>;
+  return <div style={styles.state} data-ui="States.state">{message}</div>;
 }

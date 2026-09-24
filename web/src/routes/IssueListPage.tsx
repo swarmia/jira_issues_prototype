@@ -4,12 +4,27 @@ import { Link } from 'react-router-dom';
 import { Avatar } from '../components/Avatar';
 import { EmptyState, ErrorState, LoadingState } from '../components/States';
 import { IssueTypeIcon } from '../components/IssueTypeIcon';
-import { StatusBadge } from '../components/StatusBadge';
+import { Icon } from '../components/Icon';
+import { Input, Select } from '../design-system/controls';
 import { ISSUE_LIST_QUERY } from '../gql/queries';
 import type { IssueStatus, IssueSummary, Project } from '../gql/types';
 import { formatDuration, formatPercent } from '../lib/format';
-import { statusLabel, STATUS_ORDER } from '../lib/statusColors';
-import styles from './IssueListPage.module.css';
+import { colorForStatus, labelForStatus, statusLabel, STATUS_ORDER } from '../lib/statusColors';
+import { styles } from './IssueListPage.styles';
+
+/**
+ * The issue list: top-level issues with filters for search, project and Swarmia statuses.
+ *
+ * Every column shows what Swarmia derived, not what the tracker sent — the Swarmia
+ * status and issue type, time in progress and child-issue progress. The raw tracker
+ * values (`sourceIssueStatus`, `sourceIssueType`) appear only as hover titles, so a
+ * row can still be matched back to the tracker. The detail page is where both sides
+ * are shown together.
+ *
+ * Filtering happens server-side (`Query.issues`); selected statuses are ORed by
+ * the repository, and an empty selection includes every status. `previousData` keeps the table on
+ * screen while a new filter loads instead of flashing the loading state.
+ */
 
 interface IssueListData {
   projects: Project[];
@@ -19,15 +34,15 @@ interface IssueListData {
 export function IssueListPage() {
   const [search, setSearch] = useState('');
   const [projectId, setProjectId] = useState('');
-  const [status, setStatus] = useState('');
+  const [statuses, setStatuses] = useState<IssueStatus[]>([]);
 
   const filter = useMemo(
     () => ({
       search: search.trim() || null,
       projectId: projectId || null,
-      status: (status || null) as IssueStatus | null,
+      statuses: statuses.length ? statuses : null,
     }),
-    [search, projectId, status],
+    [search, projectId, statuses],
   );
 
   const { data, loading, error, previousData, refetch } = useQuery<IssueListData>(ISSUE_LIST_QUERY, {
@@ -43,26 +58,26 @@ export function IssueListPage() {
 
   return (
     <>
-      <div className={styles.header}>
+      <div style={styles.header} data-ui="IssueListPage.header">
         <div>
-          <h1 className={styles.title}>Issues</h1>
-          <p className={styles.subtitle}>
+          <h1 style={styles.title} data-ui="IssueListPage.title">Issues</h1>
+          <p style={styles.subtitle} data-ui="IssueListPage.subtitle">
             Jira issues Swarmia is tracking, with the time in progress and child-issue progress it
             derived from their status periods.
           </p>
         </div>
       </div>
 
-      <div className={styles.filters}>
-        <input
-          className={styles.search}
+      <div style={styles.filters} data-ui="IssueListPage.filters">
+        <Input
+          wrapperStyle={styles.search}
           type="search"
           value={search}
           placeholder="Search key or title…"
           onChange={event => setSearch(event.target.value)}
         />
-        <select
-          className={styles.select}
+        <Select
+          style={styles.select}
           value={projectId}
           onChange={event => setProjectId(event.target.value)}
           aria-label="Project"
@@ -73,21 +88,17 @@ export function IssueListPage() {
               {project.name}
             </option>
           ))}
-        </select>
-        <select
-          className={styles.select}
-          value={status}
-          onChange={event => setStatus(event.target.value)}
+        </Select>
+        <Select
+          mode="checkbox"
+          style={styles.select}
+          value={statuses}
+          onValuesChange={values => setStatuses(values as IssueStatus[])}
           aria-label="Status"
-        >
-          <option value="">Any status</option>
-          {STATUS_ORDER.map(value => (
-            <option key={value} value={value}>
-              {statusLabel[value]}
-            </option>
-          ))}
-        </select>
-        <span className={styles.count}>
+          placeholder="Any status"
+          options={STATUS_ORDER.map(value => ({ value, label: statusLabel[value] }))}
+        />
+        <span style={styles.count} data-ui="IssueListPage.count">
           {issues.length} issue{issues.length === 1 ? '' : 's'}
         </span>
       </div>
@@ -95,62 +106,99 @@ export function IssueListPage() {
       {issues.length === 0 ? (
         <EmptyState message="No issues match these filters." />
       ) : (
-        <div className={styles.table}>
-          <div className={`${styles.row} ${styles.head}`}>
+        <div style={styles.table} data-ui="IssueListPage.table">
+          <div style={{ ...styles.row, ...styles.head }} data-ui="IssueListPage.row IssueListPage.head">
             <span>Issue</span>
             <span>Status</span>
             <span>Assignee</span>
             <span>Progress</span>
-            <span className={styles.right}>In progress</span>
+            <span style={styles.right} data-ui="IssueListPage.right">In progress</span>
             <span>Project</span>
           </div>
           {issues.map(issue => (
             <Link
               key={issue.id}
               to={`/issues/${issue.issueKey}`}
-              className={`${styles.row} ${styles.body}`}
+              style={{ ...styles.row, ...styles.body }}
+              data-ui="IssueListPage.row IssueListPage.body"
             >
-              <span className={styles.issueCell}>
-                <IssueTypeIcon issueType={issue.issueType} title={issue.sourceIssueType} />
-                <span className={styles.issueKey}>{issue.issueKey}</span>
-                <span className={styles.issueTitle}>{issue.title}</span>
+              <span style={styles.issueCell} data-ui="IssueListPage.issueCell">
+                <IssueTypeIcon
+                  issueType={issue.issueType}
+                  title={issue.issueType ? `${issue.issueType} (${issue.sourceIssueType} in the tracker)` : issue.sourceIssueType}
+                />
+                <span style={styles.issueKey} data-ui="IssueListPage.issueKey">{issue.issueKey}</span>
+                <span style={styles.issueTitle} data-ui="IssueListPage.issueTitle">{issue.title}</span>
               </span>
-              <span className={styles.muted}>
-                <StatusBadge sourceStatus={issue.sourceIssueStatus} status={issue.status} />
+              <span style={styles.muted} data-ui="IssueListPage.muted">
+                <ListStatus sourceStatus={issue.sourceIssueStatus} status={issue.status} />
               </span>
               <span>
                 {issue.assignee ? (
-                  <span className={styles.assignee}>
+                  <span style={styles.assignee} data-ui="IssueListPage.assignee">
                     <Avatar initials={issue.assignee.initials} name={issue.assignee.name} size={20} />
                     {issue.assignee.name}
                   </span>
                 ) : (
-                  <span className={styles.muted}>Unassigned</span>
+                  <span style={styles.muted} data-ui="IssueListPage.muted">Unassigned</span>
                 )}
               </span>
-              <span className={styles.progressCell}>
-                <span className={styles.progressTrack}>
+              <span style={styles.progressCell} data-ui="IssueListPage.progressCell">
+                <span style={styles.progressTrack} data-ui="IssueListPage.progressTrack">
                   <span
-                    className={styles.progressFill}
-                    style={{ width: formatPercent(issue.progress.percent) }}
+                    style={{ ...styles.progressFill, width: formatPercent(issue.progress.percent) }} data-ui="IssueListPage.progressFill"
                   />
                 </span>
-                <span className={`${styles.muted} tabularNums`}>
+                <span className="tabularNums" style={styles.muted}>
                   {issue.progress.completed}/{issue.progress.total}
                 </span>
               </span>
-              <span className={`${styles.right} tabularNums`}>
+              <span className="tabularNums" style={styles.right}>
                 {issue.inProgressTimeSeconds === null ? (
-                  <span className={styles.muted}>—</span>
+                  <span style={styles.muted} data-ui="IssueListPage.muted">—</span>
                 ) : (
                   formatDuration(issue.inProgressTimeSeconds)
                 )}
               </span>
-              <span className={styles.muted}>{issue.project?.name ?? '—'}</span>
+              <span style={styles.muted} data-ui="IssueListPage.muted">{issue.project?.name ?? '—'}</span>
             </Link>
           ))}
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * The Swarmia status, with the tracker's own name for it as the hover title.
+ *
+ * Deliberately not `StatusBadge`, which leads with the source status for the detail
+ * page. An unmapped status (`status === null`) reads "Unmapped" in the greyed colour:
+ * it has no Swarmia status and drives no metric, so the list must not imply one.
+ */
+function ListStatus({ sourceStatus, status }: { sourceStatus: string | null; status: IssueStatus | null }) {
+  const title =
+    sourceStatus === null
+      ? 'No status in the tracker'
+      : status === null
+        ? `"${sourceStatus}" is not mapped to a Swarmia status`
+        : `"${sourceStatus}" in the tracker`;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} title={title}>
+      {status === 'DONE' ? (
+        <Icon name="Check" size={12} color="var(--green600)" />
+      ) : (
+        <span
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 9999,
+            background: colorForStatus(status),
+            display: 'inline-block',
+          }}
+        />
+      )}
+      {labelForStatus(status)}
+    </span>
   );
 }

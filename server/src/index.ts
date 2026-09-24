@@ -1,11 +1,20 @@
 import { createServer } from 'node:http';
 import { createSchema, createYoga } from 'graphql-yoga';
-// Populates the store. Imported for its side effects, before anything reads it.
-import './data/fixtures.js';
+import { DATABASE_PATH, initializeDatabase } from './db/database.js';
+import { seed, seedCounts } from './db/seed.js';
 import { createContext, resolvers } from './resolvers.js';
 import { typeDefs } from './schema.js';
 
 const port = Number(process.env.PORT ?? 4000);
+
+// Creates and seeds the database on first run; a no-op afterwards.
+const { seeded } = initializeDatabase(seed);
+console.log(
+  seeded
+    ? `Seeded ${DATABASE_PATH} with ${seedCounts.issues} issues, ` +
+        `${seedCounts.statusPeriods} status periods, ${seedCounts.activities} activities`
+    : `Using existing database at ${DATABASE_PATH}`,
+);
 
 const yoga = createYoga({
   schema: createSchema({ typeDefs, resolvers }),

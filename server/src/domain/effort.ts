@@ -10,7 +10,7 @@
  * business days is what keeps that cap meaningful.
  */
 
-import type { EffortDailyRecord } from '../data/store.js';
+import type { EffortDailyRecord } from '../data/types.js';
 import { businessDaysInMonth, toMonthKey } from './dates.js';
 
 export interface MonthlyEffort {

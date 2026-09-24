@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { BurnupPoint } from '../../gql/types';
 import { formatShortDate } from '../../lib/format';
-import styles from './BurnupChart.module.css';
+import { styles } from './BurnupChart.styles';
 
 const WIDTH = 720;
 const HEIGHT = 180;
@@ -77,10 +77,10 @@ export function BurnupChart({ points, from, to, startedAt }: BurnupChartProps) {
   };
 
   return (
-    <div className={styles.wrapper}>
+    <div style={styles.wrapper} data-ui="BurnupChart.wrapper">
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        className={styles.svg}
+        style={styles.svg} data-ui="BurnupChart.svg"
         role="img"
         aria-label="Burn-up of scope and completed work"
         onMouseMove={onMove}
@@ -144,10 +144,9 @@ export function BurnupChart({ points, from, to, startedAt }: BurnupChartProps) {
 
       {hovered && (
         <div
-          className={styles.tooltip}
-          style={{ left: `${Math.min(88, Math.max(8, (hovered.x / WIDTH) * 100))}%` }}
+          style={{ ...styles.tooltip, left: `${Math.min(88, Math.max(8, (hovered.x / WIDTH) * 100))}%` }} data-ui="BurnupChart.tooltip"
         >
-          <div className={styles.tooltipTitle}>{formatShortDate(hovered.date)}</div>
+          <div style={styles.tooltipTitle} data-ui="BurnupChart.tooltipTitle">{formatShortDate(hovered.date)}</div>
           <div>
             {hovered.completed} of {hovered.scope} done
           </div>

@@ -1,0 +1,124 @@
+@media (max-width: 720px) {
+  [data-ui~="AppLayout.main"] {
+    padding: 24px 16px 48px !important;
+  }
+}
+
+[data-ui~="AnnotationsPanel.note"]:hover [data-ui~="AnnotationsPanel.deleteButton"],
+[data-ui~="AnnotationsPanel.deleteButton"]:focus-visible {
+  opacity: 1 !important;
+}
+
+[data-ui~="AnnotationsPanel.deleteButton"]:hover {
+  color: var(--red500) !important;
+}
+
+[data-ui~="ChildIssues.row"] + [data-ui~="ChildIssues.row"] {
+  border-top: 1px solid var(--strokeLight) !important;
+}
+
+[data-ui~="ChildIssues.row"]:hover {
+  background: var(--surfaceHover) !important;
+  text-decoration: none !important;
+}
+
+[data-ui~="Description.body"] p:last-child {
+  margin-bottom: 0 !important;
+}
+
+[data-ui~="Sidebar.item"]:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  text-decoration: none !important;
+}
+
+[data-ui~="Sidebar.item"][aria-disabled='true'] {
+  cursor: default !important;
+}
+
+@media (max-width: 720px) {
+  [data-ui~="Sidebar.sidebar"] {
+    display: none !important;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1000px) {
+  [data-ui~="IssueDetailPage.detailsGrid"] {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  [data-ui~="IssueDetailPage.cards"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+[data-ui~="IssueListPage.body"]:hover {
+  background: var(--surfaceHover) !important;
+  text-decoration: none !important;
+}
+
+@media (max-width: 1100px) {
+  [data-ui~="IssueListPage.row"] {
+    grid-template-columns: minmax(0, 2fr) 130px 150px 110px !important;
+  }
+
+  [data-ui~="IssueListPage.row"] > :nth-child(n + 5) {
+    display: none !important;
+  }
+}
+
+
+[data-ui~="controls.button"]:disabled { opacity: .6 !important; cursor: not-allowed !important; }
+
+[data-ui~="controls.button_primary"]:hover:not(:disabled) { color: var(--white) !important; background: var(--buttonPrimaryBgHover) !important; }
+
+[data-ui~="controls.button_secondary"]:hover:not(:disabled) { background: var(--buttonSecondaryBgHover) !important; }
+
+[data-ui~="controls.button_destructive"]:hover:not(:disabled) { background: var(--buttonDestructiveBgHover) !important; }
+
+[data-ui~="controls.button_ghost"]:hover:not(:disabled) { color: var(--textPrimary) !important; background: var(--buttonGhostBgHover) !important; }
+
+[data-ui~="controls.button_ghostDestructive"]:hover:not(:disabled) { background: var(--buttonDestructiveBgHover) !important; }
+
+[data-ui~="controls.button_subtle"]:hover:not(:disabled) { background: var(--strokeDark) !important; }
+
+[data-ui~="controls.button_link"]:hover:not(:disabled), [data-ui~="controls.button_linkBlack"]:hover:not(:disabled),
+[data-ui~="controls.button_linkInline"]:hover:not(:disabled) { text-decoration: underline !important; }
+
+[data-ui~="controls.field"]:focus-within, [data-ui~="controls.select"]:focus-visible, [data-ui~="controls.textArea"]:focus-visible { border-color: var(--blue300) !important; box-shadow: var(--shadowActive) !important; outline: none !important; }
+
+[data-ui~="controls.field"]:has(input:disabled), [data-ui~="controls.field"]:has(input:read-only), [data-ui~="controls.select"]:disabled, [data-ui~="controls.textArea"]:disabled, [data-ui~="controls.textArea"]:read-only { background: var(--surfaceDeltaNeutral) !important; }
+
+[data-ui~="controls.fieldControl"]::placeholder, [data-ui~="controls.textArea"]::placeholder { color: var(--textPlaceholder) !important; }
+
+[data-ui~="controls.fieldControl"]:disabled, [data-ui~="controls.fieldControl"]:read-only { color: var(--textDisabled) !important; cursor: not-allowed !important; }
+
+[data-ui~="controls.select"]:disabled { color: var(--textDisabled) !important; cursor: not-allowed !important; }
+
+.checkboxSelectOption { display: flex !important; padding: var(--space8) !important; border-radius: var(--radiusMedium) !important; white-space: nowrap !important; }
+
+.checkboxSelectOption:hover { background: var(--surfaceHover) !important; }
+
+[data-ui~="controls.choice"]:has(input:disabled), [data-ui~="controls.switchLabel"]:has(input:disabled) { color: var(--textDisabled) !important; cursor: not-allowed !important; }
+
+[data-ui~="controls.switchTrack"]::after { content: '' !important; position: absolute !important; top: 2px !important; left: 2px !important; width: 16px !important; height: 16px !important; border-radius: 50% !important; background: var(--white) !important; box-shadow: var(--shadowSmall) !important; transition: transform var(--transitionDefault) !important; }
+
+[data-ui~="controls.switchInput"]:checked + [data-ui~="controls.switchTrack"] { background: var(--blue500) !important; }
+
+[data-ui~="controls.switchInput"]:checked + [data-ui~="controls.switchTrack"]::after { transform: translateX(16px) !important; }
+
+[data-ui~="controls.switchInput"]:focus-visible + [data-ui~="controls.switchTrack"] { outline: 2px solid var(--blue500) !important; outline-offset: 2px !important; }
+
+[data-ui~="controls.switchInput"]:disabled + [data-ui~="controls.switchTrack"] { opacity: .3 !important; }
+
+[data-ui~="controls.dropdown"] > [data-ui~="controls.button"] { gap: var(--space12) !important; }
+
+[data-ui~="controls.menuItem"]:hover:not(:disabled), [data-ui~="controls.menuItem"]:focus-visible { background: var(--surfaceHover) !important; }
+
+[data-ui~="controls.menuItem"]:disabled { opacity: .6 !important; cursor: not-allowed !important; }

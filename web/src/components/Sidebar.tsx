@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { Icon, type IconName } from './Icon';
-import styles from './Sidebar.module.css';
+import { styles } from './Sidebar.styles';
 
 interface NavItem {
   label: string;
@@ -11,6 +11,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  { label: 'Design system', icon: 'Check', to: '/design-system' },
   { label: 'Home', icon: 'NavHome' },
   { label: 'Swarmia AI', icon: 'Agents' },
   { label: 'Focus', icon: 'NavInitiative', to: '/issues', chevron: true },
@@ -25,22 +26,23 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   return (
-    <aside className={styles.sidebar}>
-      <div className={styles.logo}>
+    <aside style={styles.sidebar} data-ui="Sidebar.sidebar">
+      <div style={styles.logo} data-ui="Sidebar.logo">
         <img src="/icons/logo-mark-light.svg" alt="Swarmia" height={30} />
       </div>
-      <nav className={styles.nav}>
+      <nav style={styles.nav} data-ui="Sidebar.nav">
         {navItems.map(item =>
           item.to ? (
             <NavLink
               key={item.label}
               to={item.to}
-              className={({ isActive }) => (isActive ? `${styles.item} ${styles.active}` : styles.item)}
+              style={({ isActive }) => ({ ...styles.item, ...(isActive ? styles.active : {}) })}
+              data-ui="Sidebar.item"
             >
               <ItemBody item={item} />
             </NavLink>
           ) : (
-            <span key={item.label} className={styles.item} aria-disabled="true">
+            <span key={item.label} style={styles.item} data-ui="Sidebar.item" aria-disabled="true">
               <ItemBody item={item} />
             </span>
           ),
@@ -54,9 +56,9 @@ function ItemBody({ item }: { item: NavItem }) {
   return (
     <>
       <Icon name={item.icon} size={18} />
-      <span className={styles.label}>{item.label}</span>
+      <span style={styles.label} data-ui="Sidebar.label">{item.label}</span>
       {item.chevron && <Icon name="ChevronRight" size={14} color="rgba(255,255,255,0.55)" />}
-      {item.dot && <span className={styles.dot} />}
+      {item.dot && <span style={styles.dot} data-ui="Sidebar.dot" />}
     </>
   );
 }

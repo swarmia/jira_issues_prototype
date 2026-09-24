@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { RichText } from './RichText';
-import styles from './Description.module.css';
+import { styles } from './Description.styles';
 
 export function Description({ description }: { description: string | null }) {
   const [expanded, setExpanded] = useState(false);
@@ -8,21 +8,21 @@ export function Description({ description }: { description: string | null }) {
   if (!description) {
     return (
       <div>
-        <h3 className={styles.heading}>Description</h3>
-        <div className={styles.subheading}>No description</div>
+        <h3 style={styles.heading} data-ui="Description.heading">Description</h3>
+        <div style={styles.subheading} data-ui="Description.subheading">No description</div>
       </div>
     );
   }
 
   return (
     <div>
-      <h3 className={styles.heading}>Description</h3>
-      <div className={styles.subheading}>Summary</div>
-      <div className={styles.body} style={{ maxHeight: expanded ? 'none' : 60 }}>
+      <h3 style={styles.heading} data-ui="Description.heading">Description</h3>
+      <div style={styles.subheading} data-ui="Description.subheading">Summary</div>
+      <div style={{ ...styles.body, maxHeight: expanded ? 'none' : 60 }} data-ui="Description.body">
         <RichText text={description} />
-        {!expanded && <div className={styles.fade} />}
+        {!expanded && <div style={styles.fade} data-ui="Description.fade" />}
       </div>
-      <button className={styles.toggle} onClick={() => setExpanded(value => !value)}>
+      <button style={styles.toggle} data-ui="Description.toggle" onClick={() => setExpanded(value => !value)}>
         {expanded ? 'Show less' : 'Show more'}
       </button>
     </div>

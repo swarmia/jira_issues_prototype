@@ -1,18 +1,18 @@
 import type { Issue } from '../gql/types';
 import { formatDuration, formatPercent, formatPercentValue } from '../lib/format';
-import cardStyles from './Card.module.css';
+import { styles as cardStyles } from './Card.styles';
 import { BurnupChart } from './charts/BurnupChart';
 import { Metric } from './Metric';
 
 export function ProgressCard({ issue }: { issue: Issue }) {
   const { progress, activityStatistics } = issue;
   return (
-    <section className={cardStyles.card}>
-      <div className={cardStyles.header}>
-        <h3 className={cardStyles.title}>Progress</h3>
+    <section style={cardStyles.card} data-ui="Card.card">
+      <div style={cardStyles.header} data-ui="Card.header">
+        <h3 style={cardStyles.title} data-ui="Card.title">Progress</h3>
       </div>
 
-      <div className={cardStyles.metrics}>
+      <div style={cardStyles.metrics} data-ui="Card.metrics">
         <Metric
           label="Completed"
           value={formatPercent(progress.percent)}

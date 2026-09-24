@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import styles from './Card.module.css';
+import { styles } from './Card.styles';
 
 interface MetricProps {
   label: string;
@@ -11,11 +11,11 @@ interface MetricProps {
 export function Metric({ label, value, suffix, swatch }: MetricProps) {
   return (
     <div>
-      <div className={styles.metricLabel}>{label}</div>
-      <div className={styles.metricValue}>
-        {swatch && <span className={styles.swatch} style={{ background: swatch }} />}
+      <div style={styles.metricLabel} data-ui="Card.metricLabel">{label}</div>
+      <div style={styles.metricValue} data-ui="Card.metricValue">
+        {swatch && <span style={{ ...styles.swatch, background: swatch }} data-ui="Card.swatch" />}
         <span>{value}</span>
-        {suffix && <span className={styles.metricSuffix}>{suffix}</span>}
+        {suffix && <span style={styles.metricSuffix} data-ui="Card.metricSuffix">{suffix}</span>}
       </div>
     </div>
   );

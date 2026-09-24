@@ -130,7 +130,7 @@ export interface Issue extends IssueSummary {
 }
 
 export interface IssueFilter {
-  status?: IssueStatus | null;
+  statuses?: IssueStatus[] | null;
   projectId?: string | null;
   search?: string | null;
 }

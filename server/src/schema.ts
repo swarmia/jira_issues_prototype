@@ -1,3 +1,8 @@
+/**
+ * GraphQL contract for source-shaped issue rows plus fields derived by resolvers.
+ * The list filter passes selected Swarmia statuses to the repository; an omitted
+ * or empty list means all statuses, including unmapped source statuses.
+ */
 export const typeDefs = /* GraphQL */ `
   scalar DateTime
 
@@ -202,7 +207,7 @@ export const typeDefs = /* GraphQL */ `
   }
 
   input IssueFilter {
-    status: IssueStatus
+    statuses: [IssueStatus!]
     projectId: ID
     search: String
   }

@@ -129,25 +129,12 @@ export const ISSUE_DETAIL_QUERY = gql`
 
       statusPeriods {
         id
-        sourceStatus
         status
         durationInSeconds
-        isCurrent
         period {
           start
           end
         }
-        author {
-          ...AuthorFields
-        }
-      }
-
-      statusTransitions {
-        id
-        fromSourceStatus
-        toSourceStatus
-        occurrences
-        timestamp
       }
 
       progress {

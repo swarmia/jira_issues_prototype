@@ -3,8 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { ADD_ANNOTATION_MUTATION, DELETE_ANNOTATION_MUTATION } from '../gql/queries';
 import type { Annotation } from '../gql/types';
 import { formatDateTime } from '../lib/format';
+import { Button, TextArea } from '../design-system/controls';
 import { Avatar } from './Avatar';
-import styles from './AnnotationsPanel.module.css';
+import { styles } from './AnnotationsPanel.styles';
 
 interface AnnotationsPanelProps {
   issueKey: string;
@@ -40,58 +41,58 @@ export function AnnotationsPanel({
   };
 
   return (
-    <section className={styles.panel}>
-      <h3 className={styles.title}>Notes</h3>
+    <section style={styles.panel} data-ui="AnnotationsPanel.panel">
+      <h3 style={styles.title} data-ui="AnnotationsPanel.title">Notes</h3>
 
       {composerOpen && (
-        <form className={styles.composer} onSubmit={submit}>
-          <textarea
+        <form style={styles.composer} data-ui="AnnotationsPanel.composer" onSubmit={submit}>
+          <TextArea
             ref={textarea}
-            className={styles.textarea}
+            style={styles.textarea}
             value={content}
             placeholder="Add context for the team — a decision, a blocker, a link…"
             onChange={event => setContent(event.target.value)}
             rows={3}
           />
-          <div className={styles.composerActions}>
-            {error && <span className={styles.error}>{error.message}</span>}
-            <button
+          <div style={styles.composerActions} data-ui="AnnotationsPanel.composerActions">
+            {error && <span style={styles.error} data-ui="AnnotationsPanel.error">{error.message}</span>}
+            <Button
               type="button"
-              className={styles.secondaryButton}
+              variant="secondary"
               onClick={() => {
                 setContent('');
                 onCloseComposer();
               }}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className={styles.primaryButton}
+              variant="primary"
               disabled={loading || !content.trim()}
             >
               {loading ? 'Saving…' : 'Save note'}
-            </button>
+            </Button>
           </div>
         </form>
       )}
 
-      <div className={styles.list}>
+      <div style={styles.list} data-ui="AnnotationsPanel.list">
         {annotations.map(annotation => (
-          <article key={annotation.id} className={styles.note}>
+          <article key={annotation.id} style={styles.note} data-ui="AnnotationsPanel.note">
             <Avatar
               initials={annotation.author?.initials ?? '?'}
               name={annotation.author?.name ?? 'Unknown'}
             />
-            <div className={styles.noteBody}>
-              <div className={styles.noteMeta}>
-                <span className={styles.noteAuthor}>{annotation.author?.name ?? 'Unknown'}</span>
+            <div style={styles.noteBody} data-ui="AnnotationsPanel.noteBody">
+              <div style={styles.noteMeta} data-ui="AnnotationsPanel.noteMeta">
+                <span style={styles.noteAuthor} data-ui="AnnotationsPanel.noteAuthor">{annotation.author?.name ?? 'Unknown'}</span>
                 <span>{formatDateTime(annotation.timestamp)}</span>
                 {annotation.source !== 'Ui' && (
-                  <span className={styles.noteSource}>{annotation.source}</span>
+                  <span style={styles.noteSource} data-ui="AnnotationsPanel.noteSource">{annotation.source}</span>
                 )}
                 <button
-                  className={styles.deleteButton}
+                  style={styles.deleteButton} data-ui="AnnotationsPanel.deleteButton"
                   onClick={() =>
                     deleteAnnotation({ variables: { issueKey, annotationId: annotation.id } })
                   }
@@ -99,7 +100,7 @@ export function AnnotationsPanel({
                   Delete
                 </button>
               </div>
-              <p className={styles.noteText}>{annotation.content}</p>
+              <p style={styles.noteText} data-ui="AnnotationsPanel.noteText">{annotation.content}</p>
             </div>
           </article>
         ))}

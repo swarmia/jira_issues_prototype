@@ -1,24 +1,38 @@
 /**
- * Assembles one `materialized_swarmia_issues` row.
+ * Assembles `materialized_swarmia_issues` rows.
  *
- * Every field here is a materialized column upstream — computed by a background
- * refresh and stored. This prototype recomputes on read, which keeps the
- * derivation visible; the trade-off is that `now` must be threaded through so a
- * single request sees one consistent clock.
+ * Upstream every field here is a materialized column, computed by a background
+ * refresh and stored. This prototype computes on read, and splits the work the
+ * way the two languages are each good at:
+ *
+ *   in SQL   the set-shaped derivation — the hierarchy (recursive CTEs) and the
+ *            current status of an issue (the `issue_current_status` view), which
+ *            the status tally is then a GROUP BY over
+ *   in here  the time-shaped derivation — merging ranges, counting business
+ *            days, rolling up effort — which SQLite expresses badly
+ *
+ * Work is done per subtree rather than per issue. Deriving one issue needs its
+ * whole subtree anyway (descendants for the tally, their activity for flow
+ * efficiency), so one pass over a subtree costs a fixed seven queries no matter
+ * how deep it goes, where per-issue loading would be an N+1.
  */
 
 import {
-  activities,
-  effortDaily,
-  findInstallation,
-  issues,
-  issueStatusPeriods,
-  type ActivityRecord,
-  type EffortDailyRecord,
-  type IssueRecord,
-  type IssueStatus,
-  type IssueStatusPeriodRecord,
-} from '../data/store.js';
+  getActivityForIssues,
+  getAncestorIds,
+  getDescendantIds,
+  getDescendantStatusCounts,
+  getEffortDailyForIssues,
+  getInstallations,
+  getIssuesByIds,
+  getStatusPeriodsForIssues,
+} from '../data/repository.js';
+import type {
+  DescendantStatusCounts,
+  IssueRecord,
+  IssueSourceInstallationRecord,
+  IssueStatus,
+} from '../data/types.js';
 import { inProgressPeriodsOf } from './cycleTime.js';
 import { DAY_MS, startOfDay } from './dates.js';
 import {
@@ -27,12 +41,6 @@ import {
   extendDateRangeWithLifecycle,
   type IssueActivityStatistics,
 } from './flowEfficiency.js';
-import {
-  ancestorIdsOf,
-  countStatuses,
-  descendantIdsOf,
-  type DescendantStatusCounts,
-} from './hierarchy.js';
 import {
   hasOpenRange,
   lowerBound,
@@ -73,59 +81,12 @@ export interface MaterializedIssue {
   scopeCreep: ScopeCreep;
 }
 
-// --- indexes -----------------------------------------------------------------
-
-let indexed: {
-  byId: Map<string, IssueRecord>;
-  childrenByParent: Map<string, IssueRecord[]>;
-  periodsByIssue: Map<string, IssueStatusPeriodRecord[]>;
-  activitiesByIssue: Map<string, ActivityRecord[]>;
-  effortByIssue: Map<string, EffortDailyRecord[]>;
-} | null = null;
-
-function indexes() {
-  if (indexed) return indexed;
-
-  const byId = new Map(issues.map(issue => [issue.id, issue]));
-  const childrenByParent = new Map<string, IssueRecord[]>();
-  for (const issue of issues) {
-    if (!issue.parentIssueId) continue;
-    const siblings = childrenByParent.get(issue.parentIssueId) ?? [];
-    siblings.push(issue);
-    childrenByParent.set(issue.parentIssueId, siblings);
-  }
-
-  const groupBy = <T extends { issueId: string }>(rows: readonly T[]) => {
-    const map = new Map<string, T[]>();
-    for (const row of rows) {
-      const existing = map.get(row.issueId) ?? [];
-      existing.push(row);
-      map.set(row.issueId, existing);
-    }
-    return map;
-  };
-
-  indexed = {
-    byId,
-    childrenByParent,
-    periodsByIssue: groupBy(issueStatusPeriods),
-    activitiesByIssue: groupBy(activities),
-    effortByIssue: groupBy(effortDaily),
-  };
-  return indexed;
-}
-
-export function childrenOfIssue(issueId: string): IssueRecord[] {
-  return indexes().childrenByParent.get(issueId) ?? [];
-}
-
 /** Effort rows on the issue or any descendant — the ancestor-chain attribution. */
-export function effortRowsFor(descendantIssueIds: readonly string[]): EffortDailyRecord[] {
-  const { effortByIssue } = indexes();
-  return descendantIssueIds.flatMap(id => effortByIssue.get(id) ?? []);
+export function effortRowsFor(descendantIssueIds: readonly string[]) {
+  return getEffortDailyForIssues(descendantIssueIds);
 }
 
-// --- derivation --------------------------------------------------------------
+// --- helpers -----------------------------------------------------------------
 
 /** SQL LEAST/GREATEST semantics: nulls are skipped rather than poisoning. */
 function leastDefined(...dates: (Date | null)[]): Date | null {
@@ -156,107 +117,170 @@ function completedAtOf(periods: readonly StatusPeriod[]): Date | null {
   return periods[index]!.period.start;
 }
 
-export function materializeIssue(record: IssueRecord, now: Date): MaterializedIssue {
-  const { byId, childrenByParent, periodsByIssue, activitiesByIssue } = indexes();
-  const installation = findInstallation(record.installationId);
+function groupBy<T, K>(rows: readonly T[], key: (row: T) => K): Map<K, T[]> {
+  const map = new Map<K, T[]>();
+  for (const row of rows) {
+    const existing = map.get(key(row)) ?? [];
+    existing.push(row);
+    map.set(key(row), existing);
+  }
+  return map;
+}
 
-  const statusPeriods = toStatusPeriods(periodsByIssue.get(record.id) ?? [], installation);
-  const current = currentStatusPeriod(statusPeriods);
-  const lastPeriod = statusPeriods[statusPeriods.length - 1];
+// --- materialization ---------------------------------------------------------
 
-  const inProgressPeriods = inProgressPeriodsOf(statusPeriods);
-  const startedAt = lowerBound(inProgressPeriods);
-  const completedAt = completedAtOf(statusPeriods);
+/**
+ * Derive the given issues and everything under them, in one pass.
+ *
+ * Eight queries, whatever the roots' number or depth: the roots' subtrees, the
+ * rows, each node's descendant and ancestor arrays, the status tally, the status
+ * periods, the activity, and the installations. Taking a list of roots rather
+ * than one is what keeps the issue list from being an N+1 — it derives 40 issues
+ * across 5 subtrees in the same 8 queries a single issue costs.
+ */
+export function materializeSubtrees(
+  rootIds: readonly string[],
+  now: Date,
+): Map<string, MaterializedIssue> {
+  if (rootIds.length === 0) return new Map();
 
-  const descendantIssueIds = descendantIdsOf(record, childrenByParent);
-  const descendantActivity = descendantIssueIds
-    .flatMap(id => activitiesByIssue.get(id) ?? [])
-    .map(activity => new Date(activity.timestamp))
-    .sort((a, b) => a.getTime() - b.getTime());
+  // The roots' own subtrees, unioned: everything that needs deriving.
+  const subtreeIds = [...new Set([...getDescendantIds(rootIds).values()].flat())];
+  if (subtreeIds.length === 0) return new Map();
 
-  // Flow efficiency: the activity window widened to cover the in-progress
-  // lifecycle, then counted in days.
-  const lifecycleEndedAt = hasOpenRange(inProgressPeriods)
-    ? null
-    : upperBound(inProgressPeriods);
-  const window = extendDateRangeWithLifecycle({
-    firstActivityDate: descendantActivity[0] ?? null,
-    lastActivityDate: descendantActivity[descendantActivity.length - 1] ?? null,
-    lifecycleStartedAt: startedAt,
-    lifecycleEndedAt,
-    now,
-  });
-  const activityStatistics = calculateIssueStatistics(
-    activityByDate({
-      activityTimestamps: descendantActivity,
-      windowStart: window.firstActivityDate,
-      windowEnd: window.lastActivityDate,
-    }),
+  const records = new Map(getIssuesByIds(subtreeIds).map(issue => [issue.id, issue]));
+  // Re-asked for every node, not just the roots: an inner node's own tally and
+  // activity window cover only its own subtree.
+  const descendantIds = getDescendantIds(subtreeIds);
+  const ancestorIds = getAncestorIds(subtreeIds);
+  const statusCounts = getDescendantStatusCounts(subtreeIds);
+  const periodsByIssue = groupBy(getStatusPeriodsForIssues(subtreeIds), row => row.issueId);
+  const activityByIssue = groupBy(getActivityForIssues(subtreeIds), row => row.issueId);
+
+  const installations = new Map<string, IssueSourceInstallationRecord>(
+    getInstallations().map(installation => [installation.id, installation]),
   );
-
-  // Lifetime: the inclusive day span covering both the activity window and the
-  // in-progress periods, floored at one day.
-  const lifetimeStart = leastDefined(startedAt, descendantActivity[0] ?? null);
-  const lifetimeEnd = greatestDefined(
-    hasOpenRange(inProgressPeriods) ? now : upperBound(inProgressPeriods),
-    descendantActivity[descendantActivity.length - 1] ?? null,
-  );
-  const lifetimeSeconds =
-    lifetimeStart === null || lifetimeEnd === null
-      ? 0
-      : Math.max(
-          Math.round(
-            (startOfDay(lifetimeEnd).getTime() - startOfDay(lifetimeStart).getTime()) / DAY_MS,
-          ) + 1,
-          1,
-        ) * 86_400;
-
-  const inProgressSeconds = totalSeconds(inProgressPeriods, now);
-
-  const children = childrenByParent.get(record.id) ?? [];
-  const childStatuses = new Map(
-    children.map(child => [
-      child.id,
-      currentStatusPeriod(toStatusPeriods(periodsByIssue.get(child.id) ?? [], installation))
-        ?.status ?? null,
-    ]),
-  );
-
-  return {
-    record,
-    statusPeriods,
-    sourceIssueStatus: (current ?? lastPeriod)?.sourceStatus ?? null,
-    status: (current ?? lastPeriod)?.status ?? null,
-    inProgressPeriods,
-    startedAt,
-    completedAt,
-    finalStatusAt: lastPeriod?.period.start ?? null,
-    // NULLIF(..., 0): never been in progress reads as null, not zero.
-    inProgressTimeSeconds: inProgressSeconds === 0 ? null : inProgressSeconds,
-    ageSeconds: Math.trunc(
-      ((completedAt ?? now).getTime() - new Date(record.sourceCreatedAt).getTime()) / 1000,
-    ),
-    lifetimeSeconds,
-    flowEfficiency: activityStatistics.efficiency * 100,
-    activityStatistics,
-    ancestorIssueIds: ancestorIdsOf(record, byId),
-    descendantIssueIds,
-    isLeafIssue: descendantIssueIds.length === 1,
-    descendantStatusCounts: countStatuses(
-      descendantIssueIds.map(id => {
-        const issue = byId.get(id);
-        if (!issue) return null;
-        return currentStatusPeriod(
-          toStatusPeriods(periodsByIssue.get(id) ?? [], findInstallation(issue.installationId)),
-        )?.status ?? null;
-      }),
-    ),
-    // Won't-do children are excluded from the scope-creep ratio.
-    scopeCreep: computeScopeCreep({
-      startedAt,
-      childCreatedAts: children
-        .filter(child => childStatuses.get(child.id) !== 'WONT_DO')
-        .map(child => new Date(child.sourceCreatedAt)),
-    }),
+  const installationOf = (id: string) => {
+    const found = installations.get(id);
+    if (!found) throw new Error(`Unknown installation: ${id}`);
+    return found;
   };
+
+  // First pass: status periods and the current status of every node. The second
+  // pass needs children's statuses, to keep won't-do children out of the
+  // scope-creep ratio.
+  const periodsById = new Map<string, StatusPeriod[]>();
+  const statusById = new Map<string, IssueStatus | null>();
+  for (const id of subtreeIds) {
+    const record = records.get(id);
+    if (!record) continue;
+    const periods = toStatusPeriods(
+      periodsByIssue.get(id) ?? [],
+      installationOf(record.installationId),
+    );
+    periodsById.set(id, periods);
+    const latest = currentStatusPeriod(periods) ?? periods[periods.length - 1];
+    statusById.set(id, latest?.status ?? null);
+  }
+
+  const materialized = new Map<string, MaterializedIssue>();
+
+  for (const id of subtreeIds) {
+    const record = records.get(id);
+    if (!record) continue;
+
+    const statusPeriods = periodsById.get(id) ?? [];
+    const current = currentStatusPeriod(statusPeriods);
+    const lastPeriod = statusPeriods[statusPeriods.length - 1];
+
+    const inProgressPeriods = inProgressPeriodsOf(statusPeriods);
+    const startedAt = lowerBound(inProgressPeriods);
+    const completedAt = completedAtOf(statusPeriods);
+
+    const ownDescendants = descendantIds.get(id) ?? [id];
+    const descendantActivity = ownDescendants
+      .flatMap(descendantId => activityByIssue.get(descendantId) ?? [])
+      .map(row => new Date(row.timestamp))
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    // Flow efficiency: the activity window widened to cover the in-progress
+    // lifecycle, then counted in days.
+    const lifecycleEndedAt = hasOpenRange(inProgressPeriods)
+      ? null
+      : upperBound(inProgressPeriods);
+    const window = extendDateRangeWithLifecycle({
+      firstActivityDate: descendantActivity[0] ?? null,
+      lastActivityDate: descendantActivity[descendantActivity.length - 1] ?? null,
+      lifecycleStartedAt: startedAt,
+      lifecycleEndedAt,
+      now,
+    });
+    const activityStatistics = calculateIssueStatistics(
+      activityByDate({
+        activityTimestamps: descendantActivity,
+        windowStart: window.firstActivityDate,
+        windowEnd: window.lastActivityDate,
+      }),
+    );
+
+    // Lifetime: the inclusive day span covering both the activity window and the
+    // in-progress periods, floored at one day.
+    const lifetimeStart = leastDefined(startedAt, descendantActivity[0] ?? null);
+    const lifetimeEnd = greatestDefined(
+      hasOpenRange(inProgressPeriods) ? now : upperBound(inProgressPeriods),
+      descendantActivity[descendantActivity.length - 1] ?? null,
+    );
+    const lifetimeSeconds =
+      lifetimeStart === null || lifetimeEnd === null
+        ? 0
+        : Math.max(
+            Math.round(
+              (startOfDay(lifetimeEnd).getTime() - startOfDay(lifetimeStart).getTime()) / DAY_MS,
+            ) + 1,
+            1,
+          ) * 86_400;
+
+    const inProgressSeconds = totalSeconds(inProgressPeriods, now);
+
+    const children = subtreeIds
+      .map(candidate => records.get(candidate))
+      .filter((child): child is IssueRecord => child?.parentIssueId === id);
+
+    materialized.set(id, {
+      record,
+      statusPeriods,
+      sourceIssueStatus: (current ?? lastPeriod)?.sourceStatus ?? null,
+      status: statusById.get(id) ?? null,
+      inProgressPeriods,
+      startedAt,
+      completedAt,
+      finalStatusAt: lastPeriod?.period.start ?? null,
+      // NULLIF(..., 0): never been in progress reads as null, not zero.
+      inProgressTimeSeconds: inProgressSeconds === 0 ? null : inProgressSeconds,
+      ageSeconds: Math.trunc(
+        ((completedAt ?? now).getTime() - new Date(record.sourceCreatedAt).getTime()) / 1000,
+      ),
+      lifetimeSeconds,
+      flowEfficiency: activityStatistics.efficiency * 100,
+      activityStatistics,
+      ancestorIssueIds: ancestorIds.get(id) ?? [],
+      descendantIssueIds: ownDescendants,
+      isLeafIssue: ownDescendants.length === 1,
+      descendantStatusCounts: statusCounts.get(id) ?? {
+        TODO: 0,
+        IN_PROGRESS: 0,
+        DONE: 0,
+        WONT_DO: 0,
+      },
+      // Won't-do children are excluded from the scope-creep ratio.
+      scopeCreep: computeScopeCreep({
+        startedAt,
+        childCreatedAts: children
+          .filter(child => statusById.get(child.id) !== 'WONT_DO')
+          .map(child => new Date(child.sourceCreatedAt)),
+      }),
+    });
+  }
+
+  return materialized;
 }

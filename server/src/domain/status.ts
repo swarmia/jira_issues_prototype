@@ -12,7 +12,7 @@ import type {
   IssueSourceInstallationRecord,
   IssueStatus,
   IssueStatusPeriodRecord,
-} from '../data/store.js';
+} from '../data/types.js';
 import type { TimestampRange } from './ranges.js';
 
 export interface StatusPeriod {
